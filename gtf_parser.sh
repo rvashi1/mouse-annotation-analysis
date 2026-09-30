@@ -31,17 +31,17 @@ sort -nr
 #-----------------------------
 # We do NOT commit the data file - it is public and one command re-creates it
 # What belongs in the repository is the command, not the data
-echo "*.gtf" > .gitignore
-echo "curl -O https://raw.githubusercontent.com/vsbuffalo/bds-
-files/master/chapter-07-unix-data-
-tools/Mus_musculus.GRCm38.75_chr1.gtf.gz" > get_data.sh
-echo "gzip -d Mus_musculus.GRCm38.75_chr1.gtf.gz" >> get_data.sh
+#echo "*.gtf" > .gitignore
+#echo "curl -O https://raw.githubusercontent.com/vsbuffalo/bds-
+#files/master/chapter-07-unix-data-
+#tools/Mus_musculus.GRCm38.75_chr1.gtf.gz" > get_data.sh
+#echo "gzip -d Mus_musculus.GRCm38.75_chr1.gtf.gz" >> get_data.sh
 # Track the changes and commit
-git add .gitignore get_data.sh
-git commit -m "Added download script and ignored the annotation file"
-git push
+#git add .gitignore get_data.sh
+#git commit -m "Added download script and ignored the annotation file"
+#git push
 # git status should NOT list the .gtf file - the .gitignore is working
-git status
+#git status
 #-----------------------------
 # To keep the commands short below, put the file name in a variable
 gtf=Mus_musculus.GRCm38.75_chr1.gtf
@@ -93,3 +93,19 @@ grep -v "^#" $gtf \
 ##
 ## The counts add up to 2027, which is the check that nothing was lost.
 #-----------------------------
+
+# QUESTION 2
+
+grep -v "^#" $gtf \
+    | awk -F"\t" '$3=="gene"' \
+    | grep 'gene_biotype "protein_coding"' \
+    | sed 's/\t[^\t]*gene_name "\([^"]*\)".*/\t\1/' \
+    | awk -F"\t" '{print $5-$4+1"\t"$9"\t"$7}' \
+    | sort -nr | head -5
+
+grep 'gene_name "Erbb4"' $gtf | awk -F'\t' '$3=="CDS"' | cut -f4,5 | sort -u | awk -F"\t" '{total = total + $2 - $1 + 1} END {print total}'
+grep 'gene_name "Erbb4"' $gtf | awk -F'\t' '$3=="transcript"' | wc -l
+
+
+# Question 3
+
